@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.walmart.ticketservice.db.entity.Venue;
 
-public interface VenueBookings extends JpaRepository<Venue, Integer> {
+public interface VenueBookingsRepo extends JpaRepository<Venue, Integer> {
 
 	@Query(value = "select sum(seatsPerTierCount) as seatsPerTierCount from Venue")
 	int getTotalAvailableSeats();

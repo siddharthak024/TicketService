@@ -5,9 +5,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ import com.walmart.ticketservice.db.entity.Venue;
 import com.walmart.ticketservice.db.repository.HoldCustomerDetailsRepo;
 import com.walmart.ticketservice.db.repository.ReserveAndCommitRepo;
 import com.walmart.ticketservice.db.repository.SeatFindAndHoldRepo;
-import com.walmart.ticketservice.db.repository.VenueBookings;
+import com.walmart.ticketservice.db.repository.VenueBookingsRepo;
 import com.walmart.ticketservice.exception.AtThisTimeAllTicketsAreBookedOrHoldException;
 import com.walmart.ticketservice.exception.CustomerEmailDoesNotMatchWithRegesteredException;
 import com.walmart.ticketservice.exception.CustomerEmailNotValidException;
@@ -34,9 +35,12 @@ import com.walmart.ticketservice.service.api.TicketService;
 @Service
 public class TicketServiceImpl implements TicketService {
 
-	final int MAX_SEATS = 10;
-	final boolean VALID_FLAG = true;
-	final boolean IS_EXPIRED = false;
+	static final int MAX_SEATS = 10;
+	static final boolean VALID_FLAG = true;
+	static final boolean IS_EXPIRED = false;
+	static final int BOOKING_IN_MULTIPLE_TIERS = 0;
+	static final int SETTING_TIER_COUNT_ZERO = 0;
+
 	@Autowired
 	private SeatFindAndHoldRepo seatFindAndHoldRepo;
 
@@ -44,14 +48,17 @@ public class TicketServiceImpl implements TicketService {
 	private HoldCustomerDetailsRepo holdCustomerDetailsRepo;
 
 	@Autowired
-	private VenueBookings venueBookings;
+	private VenueBookingsRepo venueBookingsRepo;
 
 	@Autowired
 	private ReserveAndCommitRepo reserveAndCommitRepo;
 
+	Logger log = LogManager.getLogger(getClass());
+
 	@Override
 	public int numSeatsAvailable() {
-		return venueBookings.getTotalAvailableSeats();
+		log.info("GET call received for total number of seats available");
+		return venueBookingsRepo.getTotalAvailableSeats();
 	}
 
 	@Override
@@ -62,11 +69,13 @@ public class TicketServiceImpl implements TicketService {
 		SeatHold seatHold = new SeatHold();
 		setCustomerDetails(customerEmail, seatHold);
 
-		int bookingStatus = 0;
+		int bookingStatus = BOOKING_IN_MULTIPLE_TIERS;
 		List<SeatBookingPerTier> seatBookingPerTiers = new ArrayList<>();
-		for (Venue venue : venueBookings.getVenueTierSeatCount()) {
+		for (Venue venue : venueBookingsRepo.getVenueTierSeatCount()) {
 			if (venue.getSeatsPerTierCount() >= numSeats) {
-				bookingStatus = venueBookings.setVenueSeatsByTier(venue.getSeatsPerTierCount() - numSeats,
+				log.info(
+						"Requested number of seats available in a tier, So updating the venue tier based on total seats per tier minus number of seats");
+				bookingStatus = venueBookingsRepo.setVenueSeatsByTier(venue.getSeatsPerTierCount() - numSeats,
 						venue.getTier());
 				SeatBookingPerTier seatBooking = new SeatBookingPerTier();
 				seatBooking.setTier(venue.getTier());
@@ -82,7 +91,7 @@ public class TicketServiceImpl implements TicketService {
 		}
 
 		bookSeatsInMultipleTiers(numSeats, seatHold, bookingStatus, seatBookingPerTiers);
-
+		log.info("Inserting seat hold request to SeatHold and SeatBookingPerTier");
 		return setSeatHoldResponse(seatFindAndHoldRepo.save(seatHold));
 	}
 
@@ -95,9 +104,10 @@ public class TicketServiceImpl implements TicketService {
 
 	private void bookSeatsInMultipleTiers(int numSeats, SeatHold seatHold, int bookingStatus,
 			List<SeatBookingPerTier> seatBookingPerTiers) {
-		if (bookingStatus == 0) {
-			int availableSeats = venueBookings.getTotalAvailableSeats();
+		if (bookingStatus == BOOKING_IN_MULTIPLE_TIERS) {
+			int availableSeats = venueBookingsRepo.getTotalAvailableSeats();
 			if (availableSeats < numSeats) {
+				log.info("Less number of seats in venue than requested, available seats are : " + availableSeats);
 				throw new LessNumberOfSeatsAvailableThanExpectedException(availableSeats);
 			}
 
@@ -105,13 +115,16 @@ public class TicketServiceImpl implements TicketService {
 				SeatBookingPerTier seatHoldInMultipleTier = new SeatBookingPerTier();
 				if (numSeats != 0 && numSeats > 0) {
 					if (numSeats > (bookingPerTier.getNumOfSeats())) {
-						venueBookings.setVenueSeatsByTier(0, bookingPerTier.getTier());
+						log.info("Setting " + bookingPerTier.getTier() + " tier of venue to zero");
+						venueBookingsRepo.setVenueSeatsByTier(SETTING_TIER_COUNT_ZERO, bookingPerTier.getTier());
 						numSeats = numSeats - (bookingPerTier.getNumOfSeats());
 						seatHoldInMultipleTier.setTier(bookingPerTier.getTier());
 						seatHoldInMultipleTier.setNumOfSeats(bookingPerTier.getNumOfSeats());
 						seatHold.addSeatBookingPerTier(seatHoldInMultipleTier);
 					} else {
-						venueBookings.setVenueSeatsByTier(Math.abs(bookingPerTier.getNumOfSeats() - numSeats),
+						log.info("Setting " + bookingPerTier.getTier()
+								+ " tier of venue to (available seats in tier - request seats)");
+						venueBookingsRepo.setVenueSeatsByTier((bookingPerTier.getNumOfSeats() - numSeats),
 								bookingPerTier.getTier());
 						seatHoldInMultipleTier.setTier(bookingPerTier.getTier());
 						seatHoldInMultipleTier.setNumOfSeats(numSeats);
@@ -124,6 +137,7 @@ public class TicketServiceImpl implements TicketService {
 	}
 
 	private SeatHoldResponse setSeatHoldResponse(SeatHold seatHoldCreated) {
+		log.info("Setting Seat Hold Response object");
 		SeatHoldResponse seatHoldResponse = new SeatHoldResponse();
 
 		seatHoldResponse.setSeatHoldId(seatHoldCreated.getSeatHoldId());
@@ -144,17 +158,21 @@ public class TicketServiceImpl implements TicketService {
 
 	private void validateSeatHoldRequest(int numSeats, String customerEmail) {
 		if (numSeats == 0) {
+			log.error("Seats cannot be zero in the request : " + numSeats);
 			throw new SeatsCannotBeZeroException(numSeats);
 		}
 		if (numSeats > MAX_SEATS) {
+			log.error("Number of seats request per transaction is greater than MAX_SEATS 10");
 			throw new MaxTicketsPerTransactionException(numSeats);
 		}
 
-		if (venueBookings.getTotalAvailableSeats() == 0) {
+		if (venueBookingsRepo.getTotalAvailableSeats() == 0) {
+			log.error("Currently all tickets are booked or hold!!! please try again in couple of minutes");
 			throw new AtThisTimeAllTicketsAreBookedOrHoldException();
 		}
 
 		if (!validateEmailFormat(customerEmail)) {
+			log.error("Customer Email is not valid format");
 			throw new CustomerEmailNotValidException();
 		}
 	}
@@ -165,28 +183,26 @@ public class TicketServiceImpl implements TicketService {
 			Customer cust = new Customer();
 			cust.setCustomerEmail(customerEmail);
 			cust.setCreatedTimestamp(new Timestamp(Instant.now().toEpochMilli()));
+			holdCustomerDetailsRepo.save(cust);
+			log.info("Registering new customer with email : " + customerEmail);
 		}
 	}
 
 	public boolean validateEmailFormat(final String customerEmail) {
-
 		final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
 				+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-		Pattern pattern = Pattern.compile(EMAIL_PATTERN);
-		Matcher matcher = pattern.matcher(customerEmail);
-		return matcher.matches();
-
+		return Pattern.compile(EMAIL_PATTERN).matcher(customerEmail).matches();
 	}
 
 	@Override
 	public String reserveSeats(int seatHoldId, String customerEmail) {
-
 		validateWithSeatHold(seatHoldId, customerEmail);
+
 		TicketConformation conformation = setTicketConformation(seatHoldId, customerEmail);
+		log.info("Reserving the seat hold request for seatHoldId :" + seatHoldId);
 		TicketConformation conformedSeatId = reserveAndCommitRepo.save(conformation);
 
 		seatFindAndHoldRepo.updateSeatHoldStatus(seatHoldId);
-
 		return conformedSeatId.getConformationId();
 	}
 
@@ -200,10 +216,12 @@ public class TicketServiceImpl implements TicketService {
 	private void validateWithSeatHold(int seatHoldId, String customerEmail) {
 		Optional<SeatHold> seatHold = seatFindAndHoldRepo.getValidSeatHoldById(seatHoldId);
 		if (!seatHold.isPresent()) {
+			log.error("Request Seat Hold ID not found in SeatHold table");
 			throw new SeatHoldIdNotFoundException(seatHoldId);
 		}
 
 		if (!customerEmail.equalsIgnoreCase(seatHold.get().getCustomerEmail())) {
+			log.error("Request email id doesn't match with the registered email and seatholdId");
 			throw new CustomerEmailDoesNotMatchWithRegesteredException();
 		}
 	}

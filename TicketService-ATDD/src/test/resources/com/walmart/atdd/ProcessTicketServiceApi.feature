@@ -22,11 +22,11 @@ Feature: To validate TicketService API functionality
 	
 		Examples:
 			|request|ServiceURL|statusCode|
-			|{"numofSeatsHold" : 8,"custEmail" : "sid@k.com"}|/venue/findandhold|200|
+			|{"numofSeatsHold" : 8,"custEmail" : "sid@k.com"}|/venue/findandhold|201|
 			|{"numofSeatsHold" : 8,"custEmail" : "BADEMAIL.com"}|/venue/findandhold|400|
 			|{"numofSeatsHold" : 100,"custEmail" : "sid@k.com"}|/venue/findandhold|400|
 			|{"numofSeatsHold" : 0,"custEmail" : "sid@k.com"}|/venue/findandhold|400|
-			|{"numofSeatsHold" : 10,"custEmail" : "sidhu@k.com"}|/venue/findandhold|200|
+			|{"numofSeatsHold" : 10,"custEmail" : "sidhu@k.com"}|/venue/findandhold|201|
 			
 	@restservice
 	Scenario Outline: To check whether TicketService reservetickets POST service returns successful response
@@ -38,8 +38,8 @@ Feature: To validate TicketService API functionality
 	
 		Examples:
 			|request|ServiceURL|statusCode|
-			|{"seatHoldId":1,"customerEmail":"sid@k.com"}|/venue/reservetickets|200|
+			|{"seatHoldId":1,"customerEmail":"sid@k.com"}|/venue/reservetickets|201|
 			|{"seatHoldId":1,"customerEmail":"sid@k.com"}|/venue/reservetickets|400|
 			|{"seatHoldId":2,"customerEmail":"sid@k.com"}|/venue/reservetickets|400|
 			|{"seatHoldId":2,"customerEmail":"WRONGEMAIL@k.com"}|/venue/reservetickets|400|
-			|{"seatHoldId":2,"customerEmail":"sidhu@k.com"}|/venue/reservetickets|200|
+			|{"seatHoldId":2,"customerEmail":"sidhu@k.com"}|/venue/reservetickets|201|
