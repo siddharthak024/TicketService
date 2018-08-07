@@ -30,7 +30,7 @@ Build tool : Maven.
 
 2. Hold the seats to get seatHoldId.
 ```
-![SeatHold](https://github.com/siddharthak024/TicketService/blob/master/images/SeatHold.JPG)
+![SeatHold](TicketService/images/SeatHold.JPG)
 ```
 3. In the next 60 secs reserve the seats hold by ID and Registered Email, otherwise your hold will be expired.
 ```
@@ -41,3 +41,4 @@ Build tool : Maven.
 ![TotalSeatAvailableAfterBooking](https://github.com/siddharthak024/TicketService/blob/master/images/TotalSeatAvailableAfterBooking.JPG)
 ```
 
+https://github.com/siddharthak024/TicketService/blob/master/images/SeatHold.JPG
