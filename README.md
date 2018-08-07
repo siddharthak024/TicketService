@@ -24,9 +24,8 @@ Build tool : Maven.
 ### Sample requests and Responses:
 
 1. Check for availability of seats.
-```
+
 ![TotalSeatAvailable](https://github.com/siddharthak024/TicketService/blob/master/images/TotalSeatAvailable.JPG)
-```
 
 2. Hold the seats to get seatHoldId.
 ```
@@ -40,5 +39,3 @@ Build tool : Maven.
 ```
 ![TotalSeatAvailableAfterBooking](https://github.com/siddharthak024/TicketService/blob/master/images/TotalSeatAvailableAfterBooking.JPG)
 ```
-
-https://github.com/siddharthak024/TicketService/blob/master/images/SeatHold.JPG
