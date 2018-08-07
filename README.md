@@ -21,6 +21,10 @@ Build tool : Maven.
 2. Run the command "java -jar target\ticketservice-api-0.1.0.jar" to start the API.
 3. For testing open new terminal and cd to TicketService/TicketService-ATDD/ and run "mvn clean test", it will run different scenarios against the localy running server.
 
+```
+####Check for different test scenarios of the API in https://github.com/siddharthak024/TicketService/blob/master/TicketService-ATDD/src/test/resources/com/walmart/atdd/ProcessTicketServiceApi.feature
+```
+
 ### Sample requests and Responses:
 
 1. Check for availability of seats.
