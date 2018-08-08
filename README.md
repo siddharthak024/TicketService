@@ -4,9 +4,10 @@ Implement a simple ticket service that facilitates the discovery, temporary hold
 
 ### Assumptions
 
-1. There are only 34 seats per tier(1 to 10) in venue, 1st being the best tier and 10 is least prefered tier. Seat numbers are not there in Venue.
-2. SeatHolds are valid only for 60 seconds can be configurable.
+1. There are only 34 seats per tier(1 to n) in venue, 1st being the best tier and 10 is least prefered tier. Seat numbers are not there in Venue.
+2. SeatHolds are valid only for 60 seconds can be configurable. After 60 Secs these seats are again added back to available seats to their respective tiers. 
 3. User can hold only MAX of 10 seats per transaction.
+4. At the time of reserving tickets, user should use same registered email(which is used at the time of seatHold request otherwise app will throw exception).  
 
 ### Technology stack used:
 
@@ -18,7 +19,7 @@ Build tool : Maven.
 ### Build and Running the application: 
 
 1. Git clone the project locally and run "mvn clean install".
-2. Run the command "java -jar target\ticketservice-api-0.1.0.jar" to start the API.
+2. Run the command "java -jar target/ticketservice-api-0.1.0.jar" to start the API.
 3. For testing open new terminal and cd to TicketService/TicketService-ATDD/ and run "mvn clean test", it will run different scenarios against the localy running server.
 
 ```

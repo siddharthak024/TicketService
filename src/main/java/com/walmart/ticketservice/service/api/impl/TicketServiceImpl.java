@@ -92,7 +92,8 @@ public class TicketServiceImpl implements TicketService {
 
 		bookSeatsInMultipleTiers(numSeats, seatHold, bookingStatus, seatBookingPerTiers);
 		log.info("Inserting seat hold request to SeatHold and SeatBookingPerTier");
-		return setSeatHoldResponse(seatFindAndHoldRepo.save(seatHold));
+		SeatHold hold = seatFindAndHoldRepo.save(seatHold);
+		return setSeatHoldResponse(hold);
 	}
 
 	private void setCustomerDetails(String customerEmail, SeatHold seatHold) {

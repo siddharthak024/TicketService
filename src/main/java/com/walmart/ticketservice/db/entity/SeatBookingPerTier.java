@@ -1,5 +1,8 @@
 package com.walmart.ticketservice.db.entity;
 
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
+
 import java.io.Serializable;
 
 import javax.persistence.Column;
@@ -69,20 +72,14 @@ public class SeatBookingPerTier implements Serializable {
 	public void setSeatHold(SeatHold seat_hold) {
 		this.seat_hold = seat_hold;
 	}
-	
+
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (!(o instanceof SeatBookingPerTier)) {
-			return false;
-		}
-		return seatBookingPerTierId != null && seatBookingPerTierId.equals(((SeatBookingPerTier) o).seatBookingPerTierId);
+		return reflectionEquals(this, o);
 	}
 
 	@Override
 	public int hashCode() {
-		return 31;
+		return reflectionHashCode(this);
 	}
 }

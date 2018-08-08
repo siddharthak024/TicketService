@@ -40,7 +40,8 @@ public class TicketServiceController {
 			@ApiResponse(code = 400, message = "Customer Email Not Valid Exception") })
 	@PostMapping(value = "/findandhold", consumes = "application/json")
 	public ResponseEntity<SeatHoldResponse> findAndHold(@RequestBody SeatHoldRequest seatHoldRequest) {
-		SeatHoldResponse seatHoldResponse = ticketService.findAndHoldSeats(seatHoldRequest.getNumofSeatsHold(), seatHoldRequest.getCustEmail());
+		SeatHoldResponse seatHoldResponse = ticketService.findAndHoldSeats(seatHoldRequest.getNumofSeatsHold(),
+				seatHoldRequest.getCustEmail());
 		return new ResponseEntity<SeatHoldResponse>(seatHoldResponse, HttpStatus.CREATED);
 	}
 
@@ -50,6 +51,8 @@ public class TicketServiceController {
 			@ApiResponse(code = 400, message = "Customer Email Does Not Match With Regestered Email Exception") })
 	@PostMapping(value = "/reservetickets", consumes = "application/json")
 	public ResponseEntity<String> reserve(@RequestBody ReserveAndCommitRequest reserveAndCommit) {
-		return new ResponseEntity<String>(ticketService.reserveSeats(reserveAndCommit.getSeatHoldId(), reserveAndCommit.getCustomerEmail()), HttpStatus.CREATED);
+		return new ResponseEntity<String>(
+				ticketService.reserveSeats(reserveAndCommit.getSeatHoldId(), reserveAndCommit.getCustomerEmail()),
+				HttpStatus.CREATED);
 	}
 }

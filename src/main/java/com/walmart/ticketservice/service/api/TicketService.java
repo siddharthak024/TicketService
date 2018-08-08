@@ -3,7 +3,7 @@ package com.walmart.ticketservice.service.api;
 import com.walmart.ticketservice.rest.response.SeatHoldResponse;
 
 public interface TicketService {
-	
+
 	/**
 	 * The number of seats in the venue that are neither held nor reserved
 	 *

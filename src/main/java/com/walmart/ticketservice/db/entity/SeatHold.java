@@ -64,22 +64,6 @@ public class SeatHold implements Serializable {
 		this.customerEmail = customerEmail;
 	}
 
-	// public int getHoldedSeats() {
-	// return holdedSeats;
-	// }
-	//
-	// public void setHoldedSeats(int holdedSeats) {
-	// this.holdedSeats = holdedSeats;
-	// }
-	//
-	// public int getTier() {
-	// return tier;
-	// }
-	//
-	// public void setTier(int tier) {
-	// this.tier = tier;
-	// }
-
 	public boolean isValidFlag() {
 		return validFlag;
 	}
